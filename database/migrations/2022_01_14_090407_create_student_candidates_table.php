@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -28,8 +29,8 @@ class CreateStudentCandidatesTable extends Migration
             $table->string('bahasa_sehari_hari');
             $table->integer('berat_badan');
             $table->integer('tinggi_badan');
-            $table->string('golongan_darah');
-            $table->string('riwayat_penyakit');
+            $table->string('golongan_darah')->nullable();
+            $table->string('riwayat_penyakit')->nullable();
             $table->text('alamat');
             $table->integer('jarak_ke_sekolah');
             $table->string('foto');
@@ -45,16 +46,17 @@ class CreateStudentCandidatesTable extends Migration
             $table->string('pendidikan_ibu');
             $table->string('pekerjaan_ibu');
             $table->string('foto_ktp_ibu');
-            $table->string('nama_wali');
-            $table->string('no_hp_wali');
-            $table->string('pendidikan_wali');
-            $table->string('pekerjaan_wali');
-            $table->string('hubungan_keluarga');
-            $table->string('foto_ktp_wali');
-            $table->text('cerita');
+            $table->string('nama_wali')->nullable();
+            $table->string('no_hp_wali')->nullable();
+            $table->string('pendidikan_wali')->nullable();
+            $table->string('pekerjaan_wali')->nullable();
+            $table->string('hubungan_keluarga')->nullable();
+            $table->string('foto_ktp_wali')->nullable();
+            $table->text('cerita')->nullable();
             $table->string('masuk_sebagai');
-            $table->string('pindahan_dari');
-            $table->date('tanggal_pindah');
+            $table->string('pindahan_dari')->nullable();
+            $table->date('tanggal_pindah')->nullable();
+            $table->enum('diterima', ['proses seleksi', 'lolos', 'tidak lolos'])->default('proses seleksi');
             $table->timestamps();
         });
     }

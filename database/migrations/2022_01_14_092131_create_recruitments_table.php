@@ -20,6 +20,7 @@ class CreateRecruitmentsTable extends Migration
             $table->timestamp('pembukaan');
             $table->timestamp('penutupan')->default(Carbon::now());
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

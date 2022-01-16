@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recruitment;
+use App\Models\StudentCandidate;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,7 +48,9 @@ class AdminController extends Controller
     {
         return view('pages.index',
         [
-            'title' => 'Index Admin'
+            'title' => 'Data Calon Peserta Didik',
+            'students' => StudentCandidate::with(['recruitment'])->tahunAjaran(request('tahun_ajaran'))->search(request('search'))->active()->paginate(50)->withQueryString(),
+            'recruitments' => Recruitment::orderBy('id','desc')->get()
         ]);
     }
 
@@ -54,8 +58,9 @@ class AdminController extends Controller
     {
         return view('pages.recruitment',
         [
-            'title' => 'Manajemen Penerimaan Peserta Didik Baru',
-            'recruitments' => Recruitment::orderBy('tahun_ajaran', 'desc')->get()
+            'title' => 'Manajemen pendaftaran Peserta Didik Baru',
+            'recruitments' => Recruitment::orderBy('id', 'desc')->get(),
+            'is_available' => count(Recruitment::all()) == 0 || Carbon::now() > Recruitment::orderBy('id', 'desc')->first()->penutupan
         ]);
     }
 
@@ -63,25 +68,62 @@ class AdminController extends Controller
     {
         return view('pages.recruitment-create',
         [
-            'title' => 'Tambah Sesi Penerimaan'
+            'title' => 'Tambah Sesi pendaftaran'
         ]);
     }
 
     public function storeRecruitment( Request $request )
     {
         $validated = $request->validate([
-            'tahun_ajaran' => 'required|integer|min:2019|max:2999',
+            'tahun_ajaran' => 'required|unique:recruitments,tahun_ajaran|integer|min:2019|max:2999',
             'pembukaan' => 'required',
             'penutupan' => 'required'
         ]);
 
         Recruitment::create($validated);
 
-        return redirect('/admin/recruitment')->with('message', '<div class="alert alert-success alert-dismissible fade show bg-success text-white" role="alert">Data penerimaan <strong>berhasil dibuat</strong>. Infokan untuk verifikasi email.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
-
-
+        return redirect('/admin/recruitment')->with('message', '<div class="alert alert-success alert-dismissible fade show bg-success text-white" role="alert">Data pendaftaran <strong>berhasil dibuat</strong>.<button type="button" class="btn-close text-white" data-bs-dismiss="alert" aria-label="Close"></button></div>');
     }
 
+    public function updateRecruitment( Request $request, $id )
+    {
+        $rules = [
+            'tahun_ajaran' => 'required',
+            'pembukaan' => 'required',
+            'penutupan' => 'required'
+        ];
+
+        if( request('tahun_ajaran') != Recruitment::where('id', $id)->first()->tahun_ajaran ) :
+            $rules['tahun_ajaran'] = 'required|unique:recruitments,tahun_ajaran|integer|min:2019|max:2999';
+        endif;
+
+        $validated = $request->validate($rules);
+
+        Recruitment::where('id', $id)->update($validated);
+
+        return redirect('/admin/recruitment')->with('message', '<div class="alert alert-success alert-dismissible fade show bg-success text-white" role="alert">Data pendaftaran <strong>berhasil diubah</strong>.<button type="button" class="btn-close text-white" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+    }
+
+    public function editRecruitment(Recruitment $recruitment)
+    {
+        return view('pages.recruitment-edit',
+        [
+            'title' => 'Ubah Pendaftaran',
+            'recruitment' => $recruitment
+        ]);
+    }
+
+    public function destroy(Recruitment $recruitment)
+    {
+        Recruitment::destroy($recruitment->id);
+        return redirect('/admin/recruitment')->with('message', '<div class="alert alert-success alert-dismissible fade show bg-success text-white" role="alert">Data pendaftaran <strong>berhasil dihapus</strong>.<button type="button" class="btn-close text-white" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+    }
+
+    public function updateStudent( StudentCandidate $student )
+    {
+        StudentCandidate::where('id', $student->id)->update(['diterima' => request('diterima')]);
+        return redirect('/admin/index')->with('message', '<div class="alert alert-success alert-dismissible fade show bg-success text-white" role="alert"><strong>berhasil</strong>.<button type="button" class="btn-close text-white" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+    }
 
 
 

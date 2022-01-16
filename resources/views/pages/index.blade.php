@@ -9,24 +9,27 @@
         {!! session('message') !!}
     @endif
 
+
+    @if( count($recruitments) > 0 )
     <form action="/admin/index" method="get">
         <label>Temukan Calon Peserta Didik</label>
         <div class="mb-3 row">
             <div class="col-12 col-md-10 col-lg-8">
                 <div class="input-group">
-                    <input type="text" class="form-control" name="search" placeholder="Cari nama atau informasi lain yang terkait">
-                    <select class="form-select" name="tahun_daftar" style="max-width: 150px;">
-                        <option value="2019">2019</option>
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
+                    <input type="text" class="form-control" name="search" placeholder="Cari nama atau informasi lain yang terkait" value="{{ request('search') }}">
+                    <select class="form-select" name="tahun_ajaran" style="max-width: 150px;">
+                        @foreach ($recruitments as $recruitment)
+                        <option value="{{ $recruitment->tahun_ajaran }}" {{ request('tahun_ajaran') == $recruitment->tahun_ajaran ? 'selected' : '' }}>{{ $recruitment->tahun_ajaran }}</option>
+                        @endforeach
                     </select>
                     <button type="submit" class="btn btn-info text-white">Cek</button>
                 </div>
             </div>
         </div>
     </form>
+    @endif
 
+    @if( count($students) > 0 )
     <table class="table table-hover table-responsive">
         <thead>
           <tr>
@@ -40,23 +43,49 @@
           </tr>
         </thead>
         <tbody>
+
+        @foreach ($students as $student)
           <tr valign="middle">
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>Laki-laki</td>
-            <td>9 Januari 2022</td>
-            <td>@mdo</td>
+            <th scope="row">{{ $loop->iteration }}</th>
+            <td>{{ $student->nama_lengkap }}</td>
+            <td>{{ $student->nama_panggilan }}</td>
+            <td>{{ $student->jk }}</td>
+            <td>{{ $student->created_at }}</td>
             <td>
-                <a href="#" class="btn btn-sm btn-info text-white w-100 mb-2">detail</a>
+                @if ( $student->diterima == 'lolos' )
+                <p class="text-success my-auto">Lolos</p>
+                @endif
+                @if ( $student->diterima == 'tidak lolos' )
+                <p class="text-danger my-auto">Tidak Lolos</p>
+                @endif
+                @if ( $student->diterima == 'proses seleksi' )
+                <p class="text-primary my-auto">Proses Seleksi</p>
+                @endif
+            </td>
+            <td>
+                <a href="/ppdb/student/{{ $student->id }}" class="btn btn-sm btn-info text-white w-100 mb-2">detail</a>
                 <div class="d-flex justify-content-between">
-                    <a href="#" class="btn btn-sm btn-success" style="width: 47%;">terima</a>
-                    <a href="#" class="btn btn-sm btn-danger" style="width: 47%;">tolak</a>
+                <form action="/admin/student/{{ $student->id }}" method="post" class="d-inline" style="width: 47%;">
+                    @csrf
+                    @method('put')
+                    <input type="hidden" name="diterima" value="lolos">
+                    <button href="submit" class="btn btn-sm btn-success w-100">terima</button>
+                </form>
+                <form action="/admin/student/{{ $student->id }}" method="post" class="d-inline" style="width: 47%;">
+                    @csrf
+                    @method('put')
+                    <input type="hidden" name="diterima" value="tidak lolos">
+                    <button href="submit" class="btn btn-sm btn-danger w-100">tolak</button>
+                </form>
                 </div>
             </td>
           </tr>
+          @endforeach
         </tbody>
-      </table>
+    </table>
+    @else
+    <p>Belum ada calon peserta didik</p>
+    @endif
 
 
 @endsection

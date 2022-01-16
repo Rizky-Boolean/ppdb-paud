@@ -8,7 +8,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item ms-md-4 ms-auto">
-            <a class="nav-link {{ request()->is('admin/index*') ? 'active' : '' }}" href="/admin/index">Data Calon Peserta Didik</a>
+            <a class="nav-link {{ request()->is('admin/index*') ? 'active' : '' }}" href="/admin/index{{ count(DB::table('recruitments')->get()) > 0 ? '?tahun_ajaran=' . DB::table('recruitments')->orderBy('id', 'desc')->first()->tahun_ajaran : '' }}">Data Calon Peserta Didik</a>
           </li>
           <li class="nav-item ms-md-4 ms-auto">
             <a class="nav-link {{ request()->is('admin/recruitment*') ? 'active' : '' }}" href="/admin/recruitment">Manajemen Pendaftaran</a>
